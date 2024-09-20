@@ -18,7 +18,7 @@ public class DM {
 
     // 전송일
     @Column(nullable = false)
-    private LocalDateTime sendedAt = LocalDateTime.now()
+    private LocalDateTime sendedAt = LocalDateTime.now();
 
     // 읽음 여부
     @Column(nullable = false)
