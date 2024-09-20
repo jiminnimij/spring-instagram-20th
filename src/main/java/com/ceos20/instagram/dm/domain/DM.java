@@ -2,10 +2,15 @@ package com.ceos20.instagram.dm.domain;
 
 import com.ceos20.instagram.user.domain.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DM {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

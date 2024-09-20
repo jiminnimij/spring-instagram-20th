@@ -3,10 +3,15 @@ package com.ceos20.instagram.comment.domain;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.user.domain.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
