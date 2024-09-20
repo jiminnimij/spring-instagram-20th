@@ -16,14 +16,19 @@ public class Follow {
     @Column(name = "follow_id")
     private Long id;
 
+    // 팔로우 한 시간
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    private Boolean isBestFriend;
+    // 친한 치구 여부
+    private Boolean isBestFriend = false;
 
+    // 팔로우 한 유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User userID;
 
+    // 팔로우 당한 유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User followingID;

@@ -25,6 +25,7 @@ public class DMRoom {
     @JoinColumn(name="user_id")
     private User userID2;
 
+    // 읽지 않은 DM
     @Column(nullable = false)
     private Long restChatCount= 0L;
 }
