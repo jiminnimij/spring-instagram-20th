@@ -12,8 +12,21 @@ CEOS 20th BE study - instagram clone coding
 - 유저 간 1:1 DM 기능
 
 #### 기능 분석
+[User]
+|내 정보 설정 페이지|연락처 추가 페이지|프로필 페이지|
+|------|---|---|
+|![image](https://github.com/user-attachments/assets/8c592b62-8ae9-49ba-985c-fc7b5339f5e8)|![image](https://github.com/user-attachments/assets/9019e531-c145-4c6c-8b18-ac4d3751090e)|![image](https://github.com/user-attachments/assets/4fc59823-c367-4e5d-b84f-843060c2b583)|
+|이름, 사용자 이름, 성별, 소개, 프로필|전화번호, 이메일|게시물, 팔로잉, 팔로워 수|
+
+[Post]
+
+[Comment]
+
+[DM]
+
 
 #### ERD
+![image](https://github.com/user-attachments/assets/5f913c7a-cdec-476a-ac4e-b3cc8d9c8c38)
 
 #### 💡@Column
 
