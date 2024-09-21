@@ -38,7 +38,7 @@ public class Comment {
 
     // 부모 댓글
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="comment_id")
+    @JoinColumn(name="parent_id")
     private Comment commentId;
 
 //    // 좋아요 수
