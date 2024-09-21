@@ -52,7 +52,7 @@ public class User {
 
     // 가입 일자
     @Column(nullable = false)
-    private LocalDateTime registedAt = LocalDateTime.now();
+    private LocalDateTime registedAt; // = LocalDateTime.now();
 
     // 생일
     private LocalDateTime birth;
