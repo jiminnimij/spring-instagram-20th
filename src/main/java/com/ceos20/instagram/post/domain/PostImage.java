@@ -24,5 +24,5 @@ public class PostImage {
     // 이미지가 사용된 게시글
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id", nullable = false)
-    private Post postID;
+    private Post postId;
 }

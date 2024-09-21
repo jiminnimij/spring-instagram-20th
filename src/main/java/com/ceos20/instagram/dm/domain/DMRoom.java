@@ -17,15 +17,15 @@ public class DMRoom {
 
     // 대화에 참여하는 유저1
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
-    private User userID1;
+    @JoinColumn(name="user1_id")
+    private User userId1;
 
     // 대화에 참여하는 유저2
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
-    private User userID2;
+    @JoinColumn(name="user2_id")
+    private User userId2;
 
-    // 읽지 않은 DM
-    @Column(nullable = false)
-    private Long restChatCount= 0L;
+//    // 읽지 않은 DM 수
+//    @Column(nullable = false)
+//    private Long restChatCount= 0L;
 }

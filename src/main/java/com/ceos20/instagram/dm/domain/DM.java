@@ -36,15 +36,15 @@ public class DM {
     // 보낸 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User senderID;
+    private User senderId;
 
     // 받는 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
-    private User receiverID;
+    private User receiverId;
 
     // DM방
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private DMRoom dmRoomID;
+    private DMRoom dmRoomId;
 }

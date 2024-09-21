@@ -29,11 +29,11 @@ public class Post {
     // 게시글 작성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User userID;
+    private User userId;
 
-    // 게시글 좋아요 수 (기본 값: 0)
-    private Long likeCount = 0L;
-
-    // 게시글 댓글 수 (기본 값: 0)
-    private Long commentCount= 0L;
+//    // 게시글 좋아요 수 (기본 값: 0)
+//    private Long likeCount = 0L;
+//
+//    // 게시글 댓글 수 (기본 값: 0)
+//    private Long commentCount= 0L;
 }

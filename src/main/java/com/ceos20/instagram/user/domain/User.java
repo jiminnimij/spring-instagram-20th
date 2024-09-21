@@ -42,13 +42,13 @@ public class User {
     // 사용자 실명
     private String name;
 
-    // 팔로잉 수
-    @Column(nullable = false)
-    private Long followingCount = 0L;
-
-    // 팔로워 수
-    @Column(nullable = false)
-    private Long followedCount;
+//    // 팔로잉 수
+//    @Column(nullable = false)
+//    private Long followingCount = 0L;
+//
+//    // 팔로워 수
+//    @Column(nullable = false)
+//    private Long followedCount;
 
     // 가입 일자
     @Column(nullable = false)

@@ -18,10 +18,10 @@ public class Scrap {
     // 스크랩한 게시글
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id", nullable = false)
-    private Post postID;
+    private Post postId;
 
     // 스크랩한 유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User userID;
+    private User userId;
 }

@@ -29,20 +29,20 @@ public class Comment {
     // 댓글 작성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User userID;
+    private User userId;
 
     // 댓글 단 게시글
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
-    private Post postID;
+    private Post postId;
 
     // 부모 댓글
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="comment_id")
-    private Comment commentID;
+    private Comment commentId;
 
-    // 좋아요 수
-    @Column(nullable = false)
-    private Long likeCount = 0L;
+//    // 좋아요 수
+//    @Column(nullable = false)
+//    private Long likeCount = 0L;
 
 }

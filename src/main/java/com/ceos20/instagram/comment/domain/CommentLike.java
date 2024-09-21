@@ -18,10 +18,10 @@ public class CommentLike {
     // 댓글
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="comment_id", nullable = false)
-    private Comment commentID;
+    private Comment commentId;
 
     // 회원
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User userID;
+    private User userId;
 }
