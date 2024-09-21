@@ -35,12 +35,12 @@ public class DM {
 
     // 보낸 사용자
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id", nullable = false)
+    @JoinColumn(name="sender_id", nullable = false)
     private User senderId;
 
     // 받는 사용자
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="receiver_id")
     private User receiverId;
 
     // DM방
