@@ -6,6 +6,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,6 +20,18 @@ public class UserRepository {
     public Optional<User> findById(Long id) {
         return Optional.ofNullable(entityManager.find(User.class, id));
     }
+
+    // nickname으로 조회
+    public Optional<User> findByNickname(String nickname) {
+        List<User> userList = entityManager.createQuery(
+                "SELECT u FROM User u " +
+                "WHERE u.nickname = :nickname",
+                User.class)
+                .setParameter("nickname", nickname)
+                .getResultList();
+        return userList.stream().findAny();
+    }
+
 
     // 저장
     public void save(User user) {
