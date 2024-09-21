@@ -26,8 +26,8 @@ public class FollowRepository {
     // following 목록 조회
     public List<User> findFollowingUsers(Long userId) {
         return entityManager.createQuery(
-                "SELECT f.following FROM Follow f " +
-                "WHERE f.follower.id = :userId",
+                "SELECT f.following_id FROM Follow f " +
+                "WHERE f.follower_id.id = :userId",
                 User.class)
                 .setParameter("userId", userId)
                 .getResultList();
@@ -36,8 +36,8 @@ public class FollowRepository {
     // follower 목록 조회
     public List<User> findFollowerusers(Long userId) {
         return entityManager.createQuery(
-                "SELECT f.follower FROM Follow f " +
-                "WHERE f.following.id = :userId",
+                "SELECT f.follower_id FROM Follow f " +
+                "WHERE f.following_id.id = :userId",
                 User.class)
                 .setParameter("userId", userId)
                 .getResultList();

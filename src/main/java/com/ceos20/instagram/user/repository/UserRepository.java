@@ -17,19 +17,18 @@ public class UserRepository {
     private EntityManager entityManager;
 
     // id로 조회
-    public Optional<User> findById(Long id) {
-        return Optional.ofNullable(entityManager.find(User.class, id));
+    public User findById(Long id) {
+        return entityManager.find(User.class, id);
     }
 
     // nickname으로 조회
-    public Optional<User> findByNickname(String nickname) {
-        List<User> userList = entityManager.createQuery(
+    public User findByNickname(String nickname) {
+        return entityManager.createQuery(
                 "SELECT u FROM User u " +
                 "WHERE u.nickname = :nickname",
                 User.class)
                 .setParameter("nickname", nickname)
-                .getResultList();
-        return userList.stream().findAny();
+                .getSingleResult();
     }
 
 
