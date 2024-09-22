@@ -142,6 +142,7 @@ public class Follow {
 - **방향**: 단방향 연관관계, 양방향 연관관계
 - **연관관계의 주인**: 양방향 연관관계에서 외래키를 관리하는 객체
 - **다중성**: 다대일, 일대다, 일대일, 다대다
+(실무에서는 다대다 관계를 사용하지 않고 테이블을 추가하여 이대다 혹은 다대일 관계로 풀어 사용한다고 합니다!)
 
 만약 데이터 중심적 모델링을 하게된다면?
 ```java
@@ -202,8 +203,70 @@ public @interface ManyToOne {
 |```@Retention(RetentionPolicy.RUNTIME)```|어노테이션이 애플리케이션 실행 중 반영|
 |```Class targetEntity() default void.class;```|관계가 설정된 대상 엔티티의 클래스를 지정(엔티티 지정안할 경우 기본 값 사용 / 이 기능은 거의 사용하지 않음)|
 |```CascadeType[] cascade() default {};```|cascade 작업 정의 (PERSIST, MERGE, REMOVE, REFRES, DETACH)|
-|```FetchType fetch() default FetchType.EAGER;```|글로벌 패치 전략 설정|
+|```FetchType fetch() default FetchType.EAGER;```|글로벌 패치 전략 설정(EAGER, LAZY)|
 |```boolean optional() default true;```|관계 필수 여부 설정(true일 경우 선택적, false일 경우 필수) |
+
+❓) 즉시 로딩과 지연 로딩?
+
+Member와 Team이 다대일 @ManyToOne 관계로 매핑되어 있다면, Member를 조회할 때 Team도 항상 함께 조회되어야 할까?
+
+만약 지연로딩을 사용한다면, Member 조회할 때 Team 클래스를 보면 Proxy 객체로 조회가 됨!!
+그 이후 팀 이름을 출력(팀 필드 접근)한다면 그제야 쿼리가 나감!
+
+그렇다면 항상 지연 로딩을 사용하는 것이 좋은가??
+
+답은 **NO**!!! 만약, 대부분의 비즈니스 로직에서 Member와 Team이 함게 필요하다면 쿼리가 따로따로 나가게 되기 때문에 네트워크를 통한 조회가 2번 필요해진다...! 따라서 대부분의 경우 함께 사용한다면 즉시 로딩을 사용하는 것이 현명하다.
+
+즉시 로딩도 단점이 있는데... 바로 예상하지 못한 SQL이 발생하고 관계를 맺는 테이블이 많다면... 그만큼의 조인이 더 많이 발생하게 된다. 또한 JPQL에서 N+1 문제를 야기한다. 따라서 실무에서는 지연로딩만 사용한다고 한다...!
+
+💡) 연관관계 매핑의 장점은 연관관계 객체를 바로 찾을 수 있고, Join Query 없이 Join이 가능, 유지보수가 용이하지만....!!! @OneToMany의 경우 DB I/O 성능 저하가 발생하게 된다... (ex. N+1 문제)
+
+❓ N+1 문제란?
+
+: 하나의 조회를 위해 총 N+1번의 쿼리가 실행되는 문제
+```java
+@Entity
+public class Memeber {
+    @Id @GeneratedValue
+    private Long id;
+    
+    private String userName;
+}
+
+@Entity
+public class Team {
+    @Id @GeneratedValue
+    private Long id;
+    
+    private teamName;
+    
+    @OneToMany
+    @JoniColumn(name = "member_id")
+    private List<Member> members;
+}
+```
+이럴 경우 TeamA에 Member 12명이 포함되었다면 TeamA를 find()한다면...?
+```sql
+SELECT * FROM Team WHERE teamId = 1;
+SELECT * FROM Member WHERE memberId = "member1";
+SELECT * FROM Member WHERE memberId = "member2";
+SELECT * FROM Member WHERE memberId = "member3";
+SELECT * FROM Member WHERE memberId = "member4";
+SELECT * FROM Member WHERE memberId = "member5";
+SELECT * FROM Member WHERE memberId = "member6";
+SELECT * FROM Member WHERE memberId = "member7";
+SELECT * FROM Member WHERE memberId = "member8";
+SELECT * FROM Member WHERE memberId = "member9";
+SELECT * FROM Member WHERE memberId = "member10";
+SELECT * FROM Member WHERE memberId = "member11";
+SELECT * FROM Member WHERE memberId = "member12";
+```
+
+그렇다면 @JoinColumn은 무엇일까...?
+```java
+
+```
+
 
 #### ❓nullable=false와 @NotNull 비교
 
