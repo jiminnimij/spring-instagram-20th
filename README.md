@@ -263,22 +263,144 @@ SELECT * FROM Member WHERE memberId = "member12";
 ```
 
 그렇다면 @JoinColumn은 무엇일까...?
+
+: 외래키를 매핑할 때 사용하는 어노테이션
 ```java
+@Repeatable(JoinColumns.class)
+@Target({ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface JoinColumn {
+    String name() default ""; // 컬럼 이름 지증
+
+    String referencedColumnName() default "";
+
+    boolean unique() default false; // 유니크 제약조건
+
+    boolean nullable() default true; //null 값 허용 여부 설정
+
+    boolean insertable() default true; // 엔티티 저장 시 필드도 같이 저장 (거의 사용 X)
+
+    boolean updatable() default true; // 엔티티 수정 시 필드도 같이 수정 (false 옵션은 읽기 전용일 경우 사용)
+
+    String columnDefinition() default ""; // 데이터베이스 컬럼 정보 직접 전달
+
+    String table() default ""; // 하나의 엔티티를 두 개 이상의 테이블에 매핑 (거의 사용 X)
+
+    ForeignKey foreignKey() default @ForeignKey(ConstraintMode.PROVIDER_DEFAULT);
+}
 
 ```
+|코드|설명|
+|---|---|
+|```String referencedColumnName() default "";```|외래키가 참조하는 대상 테이블의 컬럼명|
+|```ForeignKey foreignKey() default @ForeignKey(ConstraintMode.PROVIDER_DEFAULT);}```|외래키 제약조건을 직접 지정 가능 -> 데이터무결성 보장, 성능 최적화, 유연성 제공을 위해 사용|
 
+나머지는 @Column과 동일 ➡️ 객체 필드를 테이블의 컬럼에 매핑시켜주는 어노테이션
+
+@Column은 생략 가능하다!
+생략할 경우 속성들이 기본값 적용! 그렇다면 null은 어떤 식으로 처리가 되는가?
+
+int와 같은 자바 기본 타입에는 null 값을 입력할 수 없다... 🥲
+
+그러나 Integer 같은 객체 타입은 null 값이 허용된다.
+
+그렇기 때문에 객체 타입으로 속성을 정의했는데 null 값을 허용하고 싶지 않다면 @NotNull이나 @Column(nullabe=false)를 해야한다.
 
 #### ❓nullable=false와 @NotNull 비교
+일반적으로 nullable=false 보다 @NotNull 추천
 
-#### ❓Long형 + 대체키 + 키 생성전략
+nullable=false는 엔티티 필드 값이 null로 채워진 상태에서 정상적으로 수행되다가 DB에 SQL 쿼리 도착 순간 테이블 컬럼의 NOT NULL 옵션에 의해 예외 발생!
 
-#### 💡@Getter, @Setter
+그러나, @NotNull은 쿼리가 보내지기 전 JPA가 만든 엔티티 필드 값이 null로 채워지는 순간 예외 발생
+
+➡️ @NotNull 어노테이션이 더 이전 단계에서 예외 검출하므로 더 안전!!
 
 ### 2) Repository 단위 테스트
-#### 💡영속성 컨텍스트
-
-#### 💡JPQL
 
 #### 테스트 코드
+```java
+package com.ceos20.instagram.user.repository;
 
-#### 어노테이션 설명
+import com.ceos20.instagram.user.domain.Follow;
+import com.ceos20.instagram.user.domain.User;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@SpringBootTest
+@Transactional
+public class FollowRepositoryTest {
+    @Autowired
+    FollowRepository followRepository;
+
+    @Autowired
+    EntityManager entityManager;
+
+    @Test
+    @DisplayName("user1을 팔로워 목록 조회")
+    void findFollowingUsersTest() {
+        // given
+        User user1 = User.builder()
+                .nickname("user1")
+                .password("1234")
+                .build();
+        entityManager.persist(user1);
+
+        User user2 = User.builder()
+                .nickname("user2")
+                .password("1234")
+                .build();;
+        entityManager.persist(user2);
+
+        User user3 = User.builder()
+                .nickname("user3")
+                .password("1234")
+                .build();;
+        entityManager.persist(user3);
+
+        User user4 = User.builder()
+                .nickname("user4")
+                .password("1234")
+                .build();;
+        entityManager.persist(user4);
+
+        Follow target1 = Follow.builder()
+                .followerId(user2)
+                .followingId(user1)
+                .build();
+
+        Follow target2 = Follow.builder()
+                .followerId(user3)
+                .followingId(user1)
+                .build();
+
+        Follow Nontarget = Follow.builder()
+                .followerId(user1)
+                .followingId(user4)
+                .build();
+
+        // when
+        followRepository.save(target1);
+        followRepository.save(target2);
+        followRepository.save(Nontarget);
+
+        List<User> followingList = followRepository.findFollowerUsers(user1.getId());
+
+        //then
+        assertEquals(2, followingList.size());
+    }
+}
+
+```
+![image](https://github.com/user-attachments/assets/72c50bfa-95e1-4a05-9c97-1dc4dc7674ba)
+
+
+
