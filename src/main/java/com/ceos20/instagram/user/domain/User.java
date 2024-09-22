@@ -42,21 +42,28 @@ public class User {
     // 사용자 실명
     private String name;
 
-//    // 팔로잉 수
-//    @Column(nullable = false)
-//    private Long followingCount = 0L;
-//
-//    // 팔로워 수
-//    @Column(nullable = false)
-//    private Long followedCount;
+    // 팔로잉 수
+    @Builder.Default
+    @Column(nullable = false)
+    private Long followingCount = 0L;
+
+    // 팔로워 수
+    @Builder.Default
+    @Column(nullable = false)
+    private Long followerCount = 0L;
+
+    // 게시물 수
+    @Builder.Default
+    @Column(nullable = false)
+    private Long postCount = 0L;
 
     // 가입 일자
     @Column(nullable = false)
-    private LocalDateTime registedAt; // = LocalDateTime.now();
+    @Builder.Default
+    private LocalDateTime registedAt = LocalDateTime.now();
 
     // 생일
     private LocalDateTime birth;
-
 
 
 }

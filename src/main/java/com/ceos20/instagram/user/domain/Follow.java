@@ -17,8 +17,9 @@ public class Follow {
     private Long id;
 
     // 팔로우 한 시간
+    @Builder.Default
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     // 친한 치구 여부
     private Boolean isBestFriend = false;
