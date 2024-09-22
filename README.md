@@ -90,10 +90,120 @@ CEOS 20th BE study - instagram clone coding
 
 #### 💡구현
 ```java
+package com.ceos20.instagram.user.domain;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Builder
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Follow {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "follow_id")
+    private Long id;
+
+    // 팔로우 한 시간
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    // 친한 친구 여부
+    private Boolean isBestFriend = false;
+
+    // 팔로우 한 유저
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="follower_id")
+    private User followerId;
+
+    // 팔로우 당한 유저
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="following_id")
+    private User followingId;
+
+
+}
 
 ```
 
 #### 💡연관관계
+연관관계 매핑: 객체의 참조와 테이블의 외래키를 매핑하는 것
+
+관계형 데이터베이스에서의 테이블 사이 연관관계 != 객체 지향 프로그램에서의 객체 사이 연관관계
+
+차이를 해소하기 위한 기술: ORM
+
+**[연관관계 매핑 고려사항]**
+
+- **방향**: 단방향 연관관계, 양방향 연관관계
+- **연관관계의 주인**: 양방향 연관관계에서 외래키를 관리하는 객체
+- **다중성**: 다대일, 일대다, 일대일, 다대다
+
+만약 데이터 중심적 모델링을 하게된다면?
+```java
+class Member {
+    private long id;
+    private long teamId;
+    private String userName;
+}
+
+class Team {
+    private long id;
+    private String teamName;
+}
+```
+➡️ 객체지향 프로그래밍에서 객체를 제대로 활용할 수 없음
+
+이렇게 할 경우 member가 속한 팀 정보를 조회하기 위해 teamId를 통해 Team 조회 필요
+```java
+Member findMember = em.find(Member.class, memberId);
+Long findTeamId = findMember.getTeamId();
+Team findTeam = em.find(Team.class, findTeamId);
+```
+이럴 경우 Memeber, Team을 조회하는 2개의 쿼리가 따로 필요
+
+🔎 그렇다면 객체 중심의 모델링을 한다면?
+```java
+@Entity
+public class Memeber {
+    @Id @GeneratedValue
+    private Long id;
+    
+    private String userName;
+    
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private Team team;
+}
+```
+➕ 추가적으로 ORM이 매핑을 해주는 것까지가 연관관계의 끝
+
+조금 더 @ManyToOne를 살펴보자면
+```java
+@Target({ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ManyToOne {
+    Class targetEntity() default void.class;
+
+    CascadeType[] cascade() default {};
+
+    FetchType fetch() default FetchType.EAGER;
+
+    boolean optional() default true;
+}
+```
+|코드|설명|
+|---|---|
+|```@Target({ElementType.METHOD, ElementType.FIELD})```|어노테이션을 메서드 혹은 필드에 사용 가능|
+|```@Retention(RetentionPolicy.RUNTIME)```|어노테이션이 애플리케이션 실행 중 반영|
+|```Class targetEntity() default void.class;```|관계가 설정된 대상 엔티티의 클래스를 지정(엔티티 지정안할 경우 기본 값 사용 / 이 기능은 거의 사용하지 않음)|
+|```CascadeType[] cascade() default {};```|cascade 작업 정의 (PERSIST, MERGE, REMOVE, REFRES, DETACH)|
+|```FetchType fetch() default FetchType.EAGER;```|글로벌 패치 전략 설정|
+|```boolean optional() default true;```|관계 필수 여부 설정(true일 경우 선택적, false일 경우 필수) |
 
 #### ❓nullable=false와 @NotNull 비교
 
