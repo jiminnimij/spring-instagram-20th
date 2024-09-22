@@ -36,6 +36,43 @@ public class UserRepositoryTest {
         assertEquals(user.getNickname(), findUser.getNickname());
     }
 
+    @Test
+    @DisplayName("id로 유저 조회")
+    void findByIdTest() {
+        // given
+        User user = User.builder()
+                .nickname("010709min")
+                .name("유지민")
+                .password("1234")
+                .registedAt(LocalDateTime.now())
+                .build();
+
+        // when
+        userRepository.save(user);
+        User findUser = userRepository.findById(user.getId());
+
+        // then
+        assertEquals(user.getId(), findUser.getId());
+    }
+
+    @Test
+    @DisplayName("삭제")
+    void deleteTest() {
+        // given
+        User user = User.builder()
+                .nickname("010709min")
+                .name("유지민")
+                .password("1234")
+                .registedAt(LocalDateTime.now())
+                .build();
+
+        // when
+        userRepository.save(user);
+        // userRepository.
+    }
+
+
+
 
 
 

@@ -26,18 +26,18 @@ public class FollowRepository {
     // following 목록 조회
     public List<User> findFollowingUsers(Long userId) {
         return entityManager.createQuery(
-                "SELECT f.following_id FROM Follow f " +
-                "WHERE f.follower_id.id = :userId",
+                "SELECT f.followingId FROM Follow f " +
+                "WHERE f.followerId.id = :userId",
                 User.class)
                 .setParameter("userId", userId)
                 .getResultList();
     }
 
     // follower 목록 조회
-    public List<User> findFollowerusers(Long userId) {
+    public List<User> findFollowerUsers(Long userId) {
         return entityManager.createQuery(
-                "SELECT f.follower_id FROM Follow f " +
-                "WHERE f.following_id.id = :userId",
+                "SELECT f.followerId FROM Follow f " +
+                "WHERE f.followingId.id = :userId",
                 User.class)
                 .setParameter("userId", userId)
                 .getResultList();

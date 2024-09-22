@@ -24,53 +24,46 @@ public class FollowRepositoryTest {
     EntityManager entityManager;
 
     @Test
-    @DisplayName("following 목록 조회")
+    @DisplayName("user1을 팔로워 목록 조회")
     void findFollowingUsersTest() {
         // given
         User user1 = User.builder()
                 .nickname("user1")
                 .password("1234")
-                .registedAt(LocalDateTime.now())
                 .build();
         entityManager.persist(user1);
 
         User user2 = User.builder()
                 .nickname("user2")
                 .password("1234")
-                .registedAt(LocalDateTime.now())
                 .build();;
         entityManager.persist(user2);
 
         User user3 = User.builder()
                 .nickname("user3")
                 .password("1234")
-                .registedAt(LocalDateTime.now())
                 .build();;
         entityManager.persist(user3);
 
         User user4 = User.builder()
                 .nickname("user4")
                 .password("1234")
-                .registedAt(LocalDateTime.now())
                 .build();;
         entityManager.persist(user4);
 
         Follow target1 = Follow.builder()
                 .followerId(user2)
                 .followingId(user1)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         Follow target2 = Follow.builder()
                 .followerId(user3)
                 .followingId(user1)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         Follow Nontarget = Follow.builder()
                 .followerId(user1)
                 .followingId(user4)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         // when
@@ -78,7 +71,7 @@ public class FollowRepositoryTest {
         followRepository.save(target2);
         followRepository.save(Nontarget);
 
-        List<User> followingList = followRepository.findFollowingUsers(user1.getId());
+        List<User> followingList = followRepository.findFollowerUsers(user1.getId());
 
         //then
         assertEquals(2, followingList.size());
