@@ -2,6 +2,7 @@ package com.ceos20.instagram.post.domain;
 
 import com.ceos20.instagram.user.domain.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -22,13 +23,14 @@ public class Post {
     private String content;
 
     // 게시글 생성 시간
-    @Column(nullable = false)
+    @NotNull
     private LocalDateTime createdAt = LocalDateTime.now();
 
 
     // 게시글 작성자
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id", nullable = false)
+    @JoinColumn(name="user_id")
+    @NotNull
     private User userId;
 
 //    // 게시글 좋아요 수 (기본 값: 0)
