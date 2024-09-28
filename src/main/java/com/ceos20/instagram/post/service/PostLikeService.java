@@ -3,16 +3,13 @@ package com.ceos20.instagram.post.service;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.dto.PostLikeDto;
 import com.ceos20.instagram.post.repository.PostLikeRepository;
-import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
-import com.ceos20.instagram.user.repository.UserRepository;
-import com.ceos20.instagram.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class PostLike {
+public class PostLikeService {
     private PostLikeRepository postLikeRepository;
     private PostService postService;
 

@@ -28,7 +28,7 @@ public class PostService {
     }
 
     public List<Post> getPosts(Long userId) {
-        List<Post> posts = postRepository.findPostByWriter(userId);
+        List<Post> posts = postRepository.findPostByWriter_Id(userId);
         if (posts.isEmpty()) {
             throw new IllegalStateException("No post");
         }

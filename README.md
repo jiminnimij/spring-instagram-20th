@@ -490,4 +490,84 @@ Repository와 DB 사이에 DAO는 Entity를 이용해 DB에 접근 해 데이터
 그렇다면 Service를 구현하기 전 DTO 구현 필요!
 
 **[DTO 구현]**
+```java
+package com.ceos20.instagram.post.dto;
 
+import com.ceos20.instagram.post.domain.Post;
+import com.ceos20.instagram.post.domain.PostImage;
+import com.ceos20.instagram.user.domain.User;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@ToString
+public class PostCreateDto {
+    private String content;
+    private User writer;
+    private List<PostImage> images;
+
+    public Post toEntity(String content, User writer) {
+        return Post.builder()
+                .content(content)
+                .writer(writer)
+                .build();
+    }
+}
+```
+
+**[service 코드 구현]**
+```java
+package com.ceos20.instagram.post.service;
+
+import com.ceos20.instagram.post.domain.Post;
+import com.ceos20.instagram.post.dto.PostCreateDto;
+import com.ceos20.instagram.post.repository.PostImageRepository;
+import com.ceos20.instagram.post.repository.PostRepository;
+import com.ceos20.instagram.user.repository.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class PostService {
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private PostImageRepository postImageRepository;
+
+    @Transactional
+    public void create(PostCreateDto postCreateDto) {
+        Post post = postCreateDto.toEntity(postCreateDto.getContent(), postCreateDto.getWriter());
+        postRepository.save(post);
+    }
+
+    public Post getPost(Long postId) {
+        return postRepository.findPostById(postId)
+                .orElseThrow(IllegalAccessError::new);
+    }
+
+    public List<Post> getPosts(Long userId) {
+        List<Post> posts = postRepository.findPostByWriter_Id(userId);
+        if (posts.isEmpty()) {
+            throw new IllegalStateException("No post");
+        }
+        return posts;
+    }
+
+    @Transactional
+    public void delete(Long postId){
+        postRepository.deletePostById(postId);
+    }
+
+
+
+
+
+}
+
+```
