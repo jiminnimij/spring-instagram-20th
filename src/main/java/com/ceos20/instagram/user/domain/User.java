@@ -72,5 +72,28 @@ public class User {
     // 생일
     private LocalDate birth;
 
+    public void increaseFollowingCount() {
+        followingCount++;
+    }
+
+    public void decreaseFollowingCount() {
+        followingCount--;
+    }
+
+    public void increaseFollowerCount() {
+        followerCount++;
+    }
+
+    public void decreaseFollowerCount() {
+        followerCount--;
+    }
+
+    public void increasePostCount() {
+        postCount++;
+    }
+
+    public void decreasePostCount() {
+        postCount--;
+    }
 
 }

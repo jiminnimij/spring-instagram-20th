@@ -49,4 +49,12 @@ public class Comment {
     @NotNull
     private Long likeCount = 0L;
 
+    public void increaseLikeCount() {
+        likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        likeCount--;
+    }
+
 }

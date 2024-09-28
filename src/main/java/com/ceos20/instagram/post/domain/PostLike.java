@@ -20,11 +20,11 @@ public class PostLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     @NotNull
-    private User userId;
+    private User user;
 
     // 좋아한 게시글
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
     @NotNull
-    private Post postId;
+    private Post post;
 }

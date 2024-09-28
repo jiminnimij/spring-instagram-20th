@@ -20,11 +20,11 @@ public class PostHashtag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
     @NotNull
-    private Post postId;
+    private Post post;
 
     // 사용된 해시태그
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="hashtag_id")
     @NotNull
-    private Hashtag hashtagId;
+    private Hashtag hashtag;
 }

@@ -402,5 +402,92 @@ public class FollowRepositoryTest {
 ```
 ![image](https://github.com/user-attachments/assets/72c50bfa-95e1-4a05-9c97-1dc4dc7674ba)
 
+## 3주차
+### 1) 인스타그램 서비스 코드 작성
+#### 지난 주 코드 개선
+**[@Size vs @Column(length=n) vs @Length]**
+- @Size
 
+    Java Bean Validation 어노테이션
+    
+    필드 크기가 min과 max 사이여야 값을 저장할 수 있도록 유효성 검사를 해줌
+    
+    JPA나 Hibernate로부터 독립적인 bean을 만들어주기 때문에 
+- @Length
+
+    Hibernate 어노테이션으로 min과 max를 이용하여 필드 값 크기에 대한 유효성 검사를 함
+
+    
+- @Column(length=value)
+    
+    JPA에서 제공하는 어노테이션으로 유효성 겁사를 해주는 것이 아니라 물리적인 데이터베이스 테이블 컬럼의 길이 속성만 지정된다!
+
+이것도 @NotNull & @Column(nullable=false)와 마찬가지로 DB의 컬럼 속성으로 지정해주는 것보다 아닌 것이 더 안정적이다.
+
+
+그렇다면 @Size와 @Length의 차이는 무엇일까?
+
+@Size의 경우 문자열, 배열, 컬렉션 등에 사용가능하고
+
+@Length의 경우 문자열만 사용 가능 
+
+@Length의 경우 Hibernate의 어노테이션이기 때문에 특정 라이브러리에 대한 의존성을 피하기 위해 사용을 자제하는 것이 좋다고 함
+
+**[BaseTime 엔티티]**
+BaseTime은 JPA에서 제공하는 엔티티를 생성할 때 사용되는 생성 일시와 수정 일시를 자동으로 관리하기 위한 클래스
+
+**[Enable.JpaAuditing]**
+
+**[@BeforeEach]**
+
+**[환경변수로 application.yml 관리]**
+
+#### 서비스 코드 작성
+**[코드 작성 전! 서비스 계층이란?]**
+스프링에는 크게 3개의 계층 존재
+
+|Presentation Layer|Business Layer|Data Access Layer|
+|---|---|---|
+|웹 클라이언트의 요청 및 응답 처리|애플리케이션 비즈니스 로직과 비즈니스와 관련된 도메인 모델의 적합성 검증|ORM(Mybatix, Hibernate)를 주로 사용하는 계층|
+|서비스계층, 데이터 엑세스 계층에서 발생하는 Exception을 처리|트랜잭션 관리, 프레젠테이션 계층과 데이터 엑세스 계층 사이를 연결하는 역할로 두 계층의 직접적 통신 방지|Database에 data를 CRUD하는 계층|
+|@Controller 어노테이션을 사용하여 작성된 클래스|Service인터페이스와 @Service 어노테이션을 사용하여 작성된 클래스|DAO 인터네이스와 @Repository 어노테이션을 사용하여 작성된 DAO 구현 클래스|
+
+💡DTO란?
+
+계층 간 데이터 교환을 위한 객체 (데이터를 주고 받을 포맷)
+
+-> Domain, VO라고도 부름 / DB에서 데이터를 얻어 Service, Controller 등으로 보낼 때 사용
+
+로직 X, 순수하게 getter, setter 같은 메소드를 가짐
+
+💡DAO란?
+
+DB에 접근하는 객체, DB를 사용해 데이터를 조작하는 기능을 하는 객체
+
+-> Repository라고도 부름(JPA 사용 시 Repository 사용) / Service 계층과 DB를 연결하는 고리
+
+
+❓ 그래서 이게 무슨말이지?
+
+전체적 구조를 살펴보면...
+
+Client <-> controller <-> Service <-> Repository <-> DB
+
+이런 식으로 작동을 하는데
+Repository와 DB 사이에 DAO는 Entity를 이용해 DB에 접근 해 데이터를 조작
+
+그리고 그 외에 각 패키지 구조 사이에서는 DTO를 통해 데이터 교환
+
+
+❓ 그러면 Entity를 이용해 DTO 역할을 하면 안돼?
+
+구현은 가능하지만 Entity와 DTO를 분리하는게 일반적
+
+1) View Layer와 DB Layer의 역할을 철저하게 분리
+2) Entity는 테이블과 매핑되는 클래스이기 때문에 변경 시 여러 클래스에 영향을 주지만 View와 통신하는 DTO는 자주 변경되기 때문
+
+
+그렇다면 Service를 구현하기 전 DTO 구현 필요!
+
+**[DTO 구현]**
 

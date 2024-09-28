@@ -28,7 +28,15 @@ public class DMRoom {
     @NotNull
     private User userId2;
 
-//    // 읽지 않은 DM 수
-//    @Column(nullable = false)
-//    private Long restChatCount= 0L;
+    // 읽지 않은 DM 수
+    @Column(nullable = false)
+    @Builder.Default
+    private Long restChatCount= 0L;
+
+    public void increaseRestChatCount() {
+        restChatCount++;
+    }
+    public void decreaseRestChatCount() {
+        restChatCount--;
+    }
 }

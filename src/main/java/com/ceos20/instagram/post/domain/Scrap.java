@@ -20,11 +20,11 @@ public class Scrap {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
     @NotNull
-    private Post postId;
+    private Post post;
 
     // 스크랩한 유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     @NotNull
-    private User userId;
+    private User user;
 }

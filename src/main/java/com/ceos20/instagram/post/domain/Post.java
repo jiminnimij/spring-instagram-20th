@@ -7,6 +7,8 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -24,18 +26,39 @@ public class Post {
 
     // 게시글 생성 시간
     @NotNull
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
 
     // 게시글 작성자
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_id")
     @NotNull
-    private User userId;
+    private User writer;
 
-//    // 게시글 좋아요 수 (기본 값: 0)
-//    private Long likeCount = 0L;
-//
-//    // 게시글 댓글 수 (기본 값: 0)
-//    private Long commentCount= 0L;
+    // 게시글 좋아요 수 (기본 값: 0)
+    @Builder.Default
+    private Long likeCount = 0L;
+
+    // 게시글 댓글 수 (기본 값: 0)
+    @Builder.Default
+    private Long commentCount = 0L;
+
+
+    public void increaseLikeCount() {
+        likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        likeCount--;
+    }
+
+    public void increaseCommentCount() {
+        commentCount++;
+    }
+
+    public void decreaseCommentCount() {
+        commentCount--;
+    }
+
 }
