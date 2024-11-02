@@ -31,10 +31,10 @@ public class UserRepositoryTest {
 
         // when
         userRepository.save(user);
-        User findUser = userRepository.findUserByNickname("010709min");
+        Optional<User> findUser = userRepository.findByNickname("010709min");
 
         //then
-        assertEquals(user.getNickname(), findUser.getNickname());
+        assertEquals(user.getNickname(), findUser.get().getNickname());
     }
 
     @Test
@@ -69,7 +69,7 @@ public class UserRepositoryTest {
 
         // when
         userRepository.save(user);
-        // userRepository.
+
     }
 
 
