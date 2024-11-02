@@ -36,6 +36,8 @@ public class PostService {
     public void create(PostRequestDto postRequestDto, final String nickname) {
         final User writer = userRepository.findByNickname(nickname)
                 .orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_USER));
+        writer.increasePostCount();
+        userRepository.save(writer);
 
         final Post post = Post.builder()
                 .content(postRequestDto.getContent())
