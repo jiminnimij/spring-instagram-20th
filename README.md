@@ -433,14 +433,6 @@ public class FollowRepositoryTest {
 
 @Length의 경우 Hibernate의 어노테이션이기 때문에 특정 라이브러리에 대한 의존성을 피하기 위해 사용을 자제하는 것이 좋다고 함
 
-**[BaseTime 엔티티]**
-BaseTime은 JPA에서 제공하는 엔티티를 생성할 때 사용되는 생성 일시와 수정 일시를 자동으로 관리하기 위한 클래스
-
-**[Enable.JpaAuditing]**
-
-**[@BeforeEach]**
-
-**[환경변수로 application.yml 관리]**
 
 #### 서비스 코드 작성
 **[코드 작성 전! 서비스 계층이란?]**
