@@ -37,12 +37,8 @@ public class PostService {
         final User writer = userRepository.findByNickname(nickname)
                 .orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_USER));
         writer.increasePostCount();
-        userRepository.save(writer);
 
-        final Post post = Post.builder()
-                .content(postRequestDto.getContent())
-                .writer(writer)
-                .build();
+        final Post post = postRequestDto.toEntity(writer);
 
         postImageService.uploadImage(post, postRequestDto.getImages());
 
