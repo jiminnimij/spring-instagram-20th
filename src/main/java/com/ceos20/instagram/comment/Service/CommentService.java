@@ -24,6 +24,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
+    @Transactional
     public void create(Long postId, CommentCreateDto commentCreateDto, final String nickname) {
         final User user = userRepository.findByNickname(nickname)
                 .orElseThrow(() -> new NotFoundException(ExceptionCode.NOT_FOUND_COMMENT));
