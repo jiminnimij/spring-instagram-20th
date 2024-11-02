@@ -2,6 +2,8 @@ package com.ceos20.instagram.post.service;
 
 import com.ceos20.instagram.comment.domain.Comment;
 import com.ceos20.instagram.comment.repository.CommentRepository;
+import com.ceos20.instagram.global.exception.ExceptionCode;
+import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.domain.PostImage;
 import com.ceos20.instagram.post.dto.PostRequestDto;
@@ -33,7 +35,7 @@ public class PostService {
     @Transactional
     public void create(PostRequestDto postRequestDto, final String nickname) {
         final User writer = userRepository.findByNickname(nickname)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+                .orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_USER));
 
         final Post post = Post.builder()
                 .content(postRequestDto.getContent())
@@ -47,7 +49,7 @@ public class PostService {
 
     public PostResponseDto getPost(Long postId) {
         final Post post = postRepository.findById(postId)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+                .orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
 
         final List<PostImage> images = postImageRepository.findByPost(post);
 
