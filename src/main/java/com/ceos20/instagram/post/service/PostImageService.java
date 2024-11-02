@@ -24,9 +24,6 @@ public class PostImageService {
     private PostRepository postRepository;
     private PostImageRepository postImageRepository;
 
-    public void delete(Long postId) {
-        postImageRepository.deletePostImageByPost(postId);
-    }
 
     public void uploadImage(Post post, List<MultipartFile> images) {
         try {

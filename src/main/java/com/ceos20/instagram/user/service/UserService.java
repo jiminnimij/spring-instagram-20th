@@ -10,19 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserService {
     private UserRepository userRepository;
-
-    @Transactional
-    public void create(UserCreateDto userCreateDto) {
-        if(userRepository.existUserLoginNickname(userCreateDto.getNickname())) {
-            throw new IllegalStateException("already exist");
-        }
-
-        User user = userCreateDto.toEntity();
-        userRepository.save(user);
-    }
-
-    public User getUser(Long userId) {
-        return userRepository.findUserById(userId)
-                .orElseThrow(IllegalStateException::new);
-    }
+//
+//    @Transactional
+//    public void create(UserCreateDto userCreateDto) {
+//        if(userRepository.existUserLoginNickname(userCreateDto.getNickname())) {
+//            throw new IllegalStateException("already exist");
+//        }
+//
+//        User user = userCreateDto.toEntity();
+//        userRepository.save(user);
+//    }
+//
+//    public User getUser(Long userId) {
+//        return userRepository.findUserById(userId)
+//                .orElseThrow(IllegalStateException::new);
+//    }
 }

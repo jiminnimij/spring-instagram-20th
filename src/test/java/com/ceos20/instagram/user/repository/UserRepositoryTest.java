@@ -50,7 +50,7 @@ public class UserRepositoryTest {
 
         // when
         userRepository.save(user);
-        Optional<User> findUser = userRepository.findUserById(user.getId());
+        Optional<User> findUser = userRepository.findById(user.getId());
 
         // then
         assertEquals(user.getId(), findUser);

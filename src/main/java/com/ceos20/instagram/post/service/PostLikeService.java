@@ -26,7 +26,7 @@ public class PostLikeService {
         Post post = postLikeDto.getPost();
 
         post.decreaseLikeCount();;
-        postLikeRepository.deletePostLikeById(postLikeDto.getId());
+        postLikeRepository.deleteById(postLikeDto.getId());
 
     }
 
