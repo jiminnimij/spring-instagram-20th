@@ -31,7 +31,7 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     @NotNull
-    private User userId;
+    private User user;
 
     // 댓글 단 게시글
     @ManyToOne(fetch = FetchType.LAZY)
