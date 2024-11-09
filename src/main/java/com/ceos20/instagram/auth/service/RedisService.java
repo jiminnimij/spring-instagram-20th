@@ -1,4 +1,4 @@
-package com.ceos20.instagram.jwt;
+package com.ceos20.instagram.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

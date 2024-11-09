@@ -1,8 +1,8 @@
 package com.ceos20.instagram.jwt.filter;
 
 import com.ceos20.instagram.jwt.JwtUtil;
-import com.ceos20.instagram.jwt.RedisService;
-import com.ceos20.instagram.user.dto.LoginResponseDto;
+import com.ceos20.instagram.auth.service.RedisService;
+import com.ceos20.instagram.auth.dto.LoginResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

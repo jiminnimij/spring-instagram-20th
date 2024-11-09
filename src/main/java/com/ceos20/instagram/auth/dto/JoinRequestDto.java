@@ -1,4 +1,4 @@
-package com.ceos20.instagram.user.dto;
+package com.ceos20.instagram.auth.dto;
 
 import lombok.Builder;
 import lombok.Getter;

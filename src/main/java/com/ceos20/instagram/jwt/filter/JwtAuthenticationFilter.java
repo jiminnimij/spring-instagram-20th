@@ -1,7 +1,6 @@
 package com.ceos20.instagram.jwt.filter;
 
-import com.ceos20.instagram.jwt.JwtUtil;
-import com.ceos20.instagram.user.dto.LoginRequestDto;
+import com.ceos20.instagram.auth.dto.LoginRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
