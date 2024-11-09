@@ -58,6 +58,10 @@ public class JwtUtil {
                 .getTime();
     }
 
+    public String getNickname(final String token) {
+        return getPayload(token)
+                .get("nickname", String.class);
+    }
 
     public boolean isExpired(final String token) {
         return getPayload(token)

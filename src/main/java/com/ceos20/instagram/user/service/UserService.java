@@ -4,6 +4,8 @@ import com.ceos20.instagram.global.exception.BadRequestException;
 import com.ceos20.instagram.global.exception.ExceptionCode;
 import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.jwt.CustomUserDetails;
+import com.ceos20.instagram.jwt.JwtUtil;
+import com.ceos20.instagram.jwt.RedisService;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,10 @@ public class UserService implements UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    private final RedisService redisService;
 //
 //    @Transactional
 //    public void create(UserCreateDto userCreateDto) {
@@ -77,5 +84,23 @@ public class UserService implements UserDetailsService {
             throw new UsernameNotFoundException("해당 유저를 찾을 수 없습니다.");
         }
         return new CustomUserDetails(findUser);
+    }
+
+    public String reissue(String refreshToken) {
+        String nickname = jwtUtil.getNickname(refreshToken);
+
+        Optional<String> optionalToken = redisService.find(nickname);
+        if (optionalToken.isPresent()) {
+            if (!optionalToken.get().equals(refreshToken)) {
+                throw new RuntimeException("유효하지 않은 refreshToken 입니다.");
+            }
+
+            User user = userRepository.findByNickname(nickname)
+                    .orElseThrow(() -> new NotFoundException(ExceptionCode.NOT_FOUND_USER));
+
+            return jwtUtil.generateAccessToken(nickname);
+        } else {
+            throw new RuntimeException("존재하지 않는 토큰입니다.");
+        }
     }
 }

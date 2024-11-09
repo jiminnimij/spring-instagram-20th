@@ -1,5 +1,7 @@
 package com.ceos20.instagram.config;
 
+import com.ceos20.instagram.jwt.JwtUtil;
+import com.ceos20.instagram.jwt.filter.JwtValidationFilter;
 import com.ceos20.instagram.jwt.filter.LoginFailHandler;
 import com.ceos20.instagram.jwt.filter.LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +35,7 @@ public class SecurityConfig {
     @Value("${spring.security.cors.allow-origins}")
     private String ALLOW_CROSS_ORIGIN_DOMAIN;
 
+    private final JwtUtil jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailHandler loginFailHandler;
@@ -56,7 +59,7 @@ public class SecurityConfig {
 
     // 시큐리티 필터 설정
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
         final String[] ALL_URL = new String[] {"/accounts/login", "/accounts/user/signup"};
 
         http
@@ -88,7 +91,9 @@ public class SecurityConfig {
 
         http
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
+        http
+                .addFilterBefore(new JwtValidationFilter(jwtUtil), JwtAuthenticationFilter.class)
+                .addFilterAt(loginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
 
 

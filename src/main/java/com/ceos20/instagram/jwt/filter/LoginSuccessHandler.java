@@ -1,6 +1,7 @@
 package com.ceos20.instagram.jwt.filter;
 
 import com.ceos20.instagram.jwt.JwtUtil;
+import com.ceos20.instagram.jwt.RedisService;
 import com.ceos20.instagram.user.dto.LoginResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
+import java.time.Duration;
 import java.util.Collection;
 
 @Slf4j
@@ -26,6 +28,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtUtil jwtUtil;
+    private final RedisService redisService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -36,8 +39,13 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         String accessToken = jwtUtil.generateAccessToken(nickname);
         String refreshToken = jwtUtil.generateRefreshToken(nickname);
-        Cookie accessTokenCookie = createCookie(accessToken, "accessToken");
+
+        redisService.save(nickname, refreshToken, Duration.ofMillis(jwtUtil.getExpiration(refreshToken)));
+
+//        Cookie accessTokenCookie = createCookie(accessToken, "accessToken");
         Cookie refreshTokenCookie = createCookie(refreshToken, "refreshToken");
+
+        response.addHeader("Authorization", "Bearer " + accessToken);
 
         String jsonResponse = new ObjectMapper().writeValueAsString(new LoginResponseDto(HttpServletResponse.SC_OK, "로그인 성공"));
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -45,7 +53,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(jsonResponse);
 
-        response.addCookie(accessTokenCookie);
+//        response.addCookie(accessTokenCookie);
         response.addCookie(refreshTokenCookie);
     }
 
