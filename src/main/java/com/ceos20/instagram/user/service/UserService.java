@@ -3,6 +3,7 @@ package com.ceos20.instagram.user.service;
 import com.ceos20.instagram.global.exception.BadRequestException;
 import com.ceos20.instagram.global.exception.ExceptionCode;
 import com.ceos20.instagram.global.exception.NotFoundException;
+import com.ceos20.instagram.jwt.CustomUserDetails;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
@@ -11,6 +12,9 @@ import com.ceos20.instagram.user.dto.UserPageResponseDto;
 import com.ceos20.instagram.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +24,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UserService {
+public class UserService implements UserDetailsService {
     private final PostRepository postRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
@@ -61,5 +65,17 @@ public class UserService {
 
         return userRepository.save(user);
 
+    }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User findUser = userRepository.findByNickname(username)
+                .orElseThrow(() -> new BadRequestException(ExceptionCode.NOT_FOUND_USER));
+
+        if(findUser == null){
+            throw new UsernameNotFoundException("해당 유저를 찾을 수 없습니다.");
+        }
+        return new CustomUserDetails(findUser);
     }
 }

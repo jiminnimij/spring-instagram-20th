@@ -1,23 +1,42 @@
 package com.ceos20.instagram.config;
 
-import lombok.CustomLog;
+import com.ceos20.instagram.jwt.filter.LoginFailHandler;
+import com.ceos20.instagram.jwt.filter.LoginSuccessHandler;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import com.ceos20.instagram.jwt.filter.JwtAuthenticationFilter;
+import java.util.Collections;
+import java.util.List;
 
-
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Value("${spring.security.cors.allowed-methods}")
+    private String[] ALLOW_METHODS;
+    @Value("${spring.security.cors.allow-origins}")
+    private String ALLOW_CROSS_ORIGIN_DOMAIN;
+
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailHandler loginFailHandler;
+
     // 회원의 패스워드 암호화
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
@@ -25,11 +44,36 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public JwtAuthenticationFilter loginAuthenticationFilter() throws Exception {
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter();
+        jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
+        jwtAuthenticationFilter.setFilterProcessesUrl("/accounts/login");
+        jwtAuthenticationFilter.setAuthenticationSuccessHandler(loginSuccessHandler);
+        jwtAuthenticationFilter.setAuthenticationFailureHandler(loginFailHandler);
+        return jwtAuthenticationFilter;
+    }
+
     // 시큐리티 필터 설정
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        final String[] ALL_URL = new String[] {"/accounts/user/login", "/accounts/user/signup"};
+        final String[] ALL_URL = new String[] {"/accounts/login", "/accounts/user/signup"};
 
+        http
+                .cors((cors -> cors.configurationSource(new CorsConfigurationSource() {
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                        CorsConfiguration configuration = new CorsConfiguration();
+
+                        configuration.setAllowedOrigins(List.of(ALLOW_CROSS_ORIGIN_DOMAIN));
+                        configuration.setAllowedMethods(List.of(ALLOW_METHODS));
+                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        configuration.setAllowCredentials(true);
+                        configuration.setMaxAge(3600L);
+
+                        return configuration;
+                    }
+                })));
         http
                 .csrf((auth) -> auth.disable());
         http
@@ -38,11 +82,20 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                 .requestMatchers(ALL_URL).permitAll()
                 .anyRequest().authenticated());
+
+        http
+                .addFilterAt(loginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
         http
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
 
 
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }
