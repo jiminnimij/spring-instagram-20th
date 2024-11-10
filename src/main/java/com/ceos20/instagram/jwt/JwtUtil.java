@@ -1,88 +1,96 @@
 package com.ceos20.instagram.jwt;
 
+
+import com.ceos20.instagram.user.domain.Role;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 import java.util.Date;
 
-import static io.jsonwebtoken.Jwts.SIG.HS256;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class JwtUtil {
-    private static final int ACCESS_TOKEN_VALIDITY = 30 * 60 * 1000;
-    private static final int REFRESH_TOKEN_VALIDITY = 60 * 60 * 1000;
+    //유효시간: 30분
+    private static final long ACCESS_TOKEN_VALIDITY = 30 * 60 * 1000L;
+    //유효시간: 60분
+    private static final long REFRESH_TOKEN_VALIDITY = 60 * 60 * 1000L;
 
-    private final SecretKey secretKey;
+    private String secretKey = "";
 
-    public JwtUtil(@Value("${spring.jwt.secret}") final String secret) {
-        final String algorithm = HS256.key()
-                .build()
-                .getAlgorithm();
-        this.secretKey = new SecretKeySpec(secret.getBytes(UTF_8), algorithm);
+    private UserDetailsService userDetailsService;
+
+    // 객체 초기화, secretKey를 Base64로 인코딩
+    protected void init() {
+        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public String generateAccessToken(String nickname) {
+    // JWT 토큰 생성
+    public String generateAccessToken(String nickname, String roles) {
+        Claims claims = (Claims) Jwts.claims().setSubject(nickname);
+        claims.put("roles", roles);
+        Date now = new Date();
         return Jwts.builder()
-                .claim("nickname", nickname)
+                .setClaims(claims)
                 .claim("type", "access")
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
-                .signWith(secretKey)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_VALIDITY))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
-    public String generateRefreshToken(String nickname) {
+
+    // JWT 토큰 생성
+    public String generateRefreshToken(String nickname, String roles) {
+        Claims claims = (Claims) Jwts.claims().setSubject(nickname);
+        claims.put("roles", roles);
+        Date now = new Date();
         return Jwts.builder()
-                .claim("nickname", nickname)
+                .setClaims(claims)
                 .claim("type", "refresh")
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
-                .signWith(secretKey)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_VALIDITY))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
-    public String getType(final String token) {
-        return getPayload(token)
-                .get("type", String.class);
+    // JWT 토큰에서 인증 정보 조회
+    public Authentication getAuthentication(String token) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getUserNickname(token));
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    public long getExpiration(final String token) {
-        return getPayload(token)
-                .getExpiration()
-                .getTime();
+    // 토큰에서 회원 정보 추출
+    public String getUserNickname(String token) {
+        return Jwts.parser().setSigningKey(secretKey).build().parseClaimsJws(token).getBody().getSubject();
     }
 
-    public String getNickname(final String token) {
-        return getPayload(token)
-                .get("nickname", String.class);
+    // Request의 Header에서 token 값
+    public String resolveToken(HttpServletRequest request) {
+        return request.getHeader("X-AUTH-TOKEN");
     }
 
-    public boolean isExpired(final String token) {
-        return getPayload(token)
-                .getExpiration()
-                .before(new Date());
+    // 토큰의 유효성 + 만료일자 확인
+    public boolean validateToken(String token) {
+        try {
+            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).build().parseClaimsJws(token);
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public boolean isEqualToRefreshToken(final String token) {
-        return "refresh".equals(getType(token));
-    }
 
-    public boolean isEqualToAccessToken(final String token) {
-        return "access".equals(getType(token));
-    }
-
-    private Claims getPayload(final String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
 }
 

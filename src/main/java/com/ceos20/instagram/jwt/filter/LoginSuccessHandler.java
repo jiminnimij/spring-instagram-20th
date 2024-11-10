@@ -3,6 +3,8 @@ package com.ceos20.instagram.jwt.filter;
 import com.ceos20.instagram.jwt.JwtUtil;
 import com.ceos20.instagram.auth.service.RedisService;
 import com.ceos20.instagram.auth.dto.LoginResponseDto;
+import com.ceos20.instagram.user.domain.Role;
+import com.ceos20.instagram.user.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -36,9 +38,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         String nickname = userDetails.getUsername();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        String role = authorities.stream().findFirst().get().getAuthority();
 
-        String accessToken = jwtUtil.generateAccessToken(nickname);
-        String refreshToken = jwtUtil.generateRefreshToken(nickname);
+
+        String accessToken = jwtUtil.generateAccessToken(nickname, role);
+        String refreshToken = jwtUtil.generateRefreshToken(nickname, role);
 
         redisService.save(nickname, refreshToken, Duration.ofMillis(jwtUtil.getExpiration(refreshToken)));
 

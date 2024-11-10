@@ -1,4 +1,4 @@
-package com.ceos20.instagram.jwt;
+package com.ceos20.instagram.auth.domain;
 
 import com.ceos20.instagram.user.domain.User;
 import lombok.RequiredArgsConstructor;

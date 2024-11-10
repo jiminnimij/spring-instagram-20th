@@ -1,5 +1,6 @@
 package com.ceos20.instagram.auth.dto;
 
+import com.ceos20.instagram.user.domain.Role;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -16,6 +17,7 @@ public class JoinRequestDto {
         return User.builder()
                 .nickname(joinRequestDto.getNickname())
                 .password(encPassword)
+                .role(Role.ROLE_USER)
                 .build();
     }
 }

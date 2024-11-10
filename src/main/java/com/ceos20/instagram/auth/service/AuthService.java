@@ -3,7 +3,7 @@ package com.ceos20.instagram.auth.service;
 import com.ceos20.instagram.global.exception.BadRequestException;
 import com.ceos20.instagram.global.exception.ExceptionCode;
 import com.ceos20.instagram.global.exception.NotFoundException;
-import com.ceos20.instagram.jwt.CustomUserDetails;
+import com.ceos20.instagram.auth.domain.CustomUserDetails;
 import com.ceos20.instagram.jwt.JwtUtil;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.auth.dto.JoinRequestDto;
@@ -11,6 +11,7 @@ import com.ceos20.instagram.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthService implements UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private UserRepository userRepository;
@@ -54,7 +55,7 @@ public class AuthService {
     }
 
     public String reissue(String refreshToken) {
-        String nickname = jwtUtil.getNickname(refreshToken);
+        String nickname = jwtUtil.getUserNickname(refreshToken);
 
         Optional<String> optionalToken = redisService.find(nickname);
         if (optionalToken.isPresent()) {
@@ -65,7 +66,7 @@ public class AuthService {
             User user = userRepository.findByNickname(nickname)
                     .orElseThrow(() -> new NotFoundException(ExceptionCode.NOT_FOUND_USER));
 
-            return jwtUtil.generateAccessToken(nickname);
+            return jwtUtil.generateAccessToken(nickname, user.getRole());
         } else {
             throw new RuntimeException("존재하지 않는 토큰입니다.");
         }

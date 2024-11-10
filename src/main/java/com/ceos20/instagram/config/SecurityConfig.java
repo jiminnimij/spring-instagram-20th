@@ -1,9 +1,11 @@
 package com.ceos20.instagram.config;
 
+import com.ceos20.instagram.jwt.JwtTokenProvider;
 import com.ceos20.instagram.jwt.JwtUtil;
 import com.ceos20.instagram.jwt.filter.JwtValidationFilter;
 import com.ceos20.instagram.jwt.filter.LoginFailHandler;
 import com.ceos20.instagram.jwt.filter.LoginSuccessHandler;
+import io.jsonwebtoken.impl.JwtTokenizer;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailHandler loginFailHandler;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // 회원의 패스워드 암호화
     @Bean
@@ -83,22 +86,18 @@ public class SecurityConfig {
                 .formLogin((auth) -> auth.disable());
         http
                 .authorizeHttpRequests((auth) -> auth
-                .requestMatchers(ALL_URL).permitAll()
+                .requestMatchers("/accounts/**").permitAll()
                 .anyRequest().authenticated());
-
-        http
-                .addFilterAt(loginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
         http
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http
-                .addFilterBefore(new JwtValidationFilter(jwtUtil), JwtAuthenticationFilter.class)
-                .addFilterAt(loginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtValidationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         return http.build();
 
 
     }
 
+    // authenticationManger를 Bean 등록
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();

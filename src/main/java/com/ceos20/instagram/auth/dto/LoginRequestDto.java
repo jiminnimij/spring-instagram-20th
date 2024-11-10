@@ -10,4 +10,5 @@ import lombok.*;
 public class LoginRequestDto {
     String nickname;
     String password;
+
 }

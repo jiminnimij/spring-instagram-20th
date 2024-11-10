@@ -1,6 +1,6 @@
 package com.ceos20.instagram.post.controller;
 
-import com.ceos20.instagram.jwt.CustomUserDetails;
+import com.ceos20.instagram.auth.domain.CustomUserDetails;
 import com.ceos20.instagram.post.dto.PostRequestDto;
 import com.ceos20.instagram.post.dto.PostResponseDto;
 import com.ceos20.instagram.post.service.PostService;
