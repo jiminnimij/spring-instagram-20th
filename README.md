@@ -1,6 +1,116 @@
 # spring-instagram-20th
 CEOS 20th BE study - instagram clone coding
 
+## 5주차
+### Spring Security 주요 객체
+- SecurityContextHolder, SecurityContext, Authentication
+  ![img.png](img.png)
+  Authentication 객체에는 principal(아이디; username), credential(비밀번호; password) 정보
+  
+    ```java
+    // Security에 로그인한 사용자의 정보를 얻기 위해선
+    SecurityContextHolder.getContext().getAuthentication().getPrincipal(); 
+    ```
+- AbstractAuthenticationProcessingFilter.java
+    ```java
+    public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean implements ApplicationEventPublisherAware, MessageSourceAware {
+
+        public abstract Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException;
+
+        protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException { }
+
+        protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException { }
+    ```
+    인증 필터로 주로 위 3가지 메서드를 구현하게 되며
+    
+    주로  이 필터를 구현한 UsernamePasswordAuthenticationFilter를 사용하고 이를 오버라이딩하게 된다.
+    
+- AbstractAuthenticationToken
+  
+  Authentication(인증)을 구현한 클래스
+  ![img_2.png](img_2.png)
+  Authenticaton 객체를 구현한 AbstractAuthenticationToken 추상클래스가 있고 이를 상속한 UsernamePasswordAuthenticationToken 존재
+    ```java
+    public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationToken {
+    private static final long serialVersionUID = 620L;
+    private final Object principal;
+    private Object credentials;
+    
+  // 아직 인증되지 않은 객체 생성
+    public UsernamePasswordAuthenticationToken(Object principal, Object credentials) {
+        super((Collection)null);
+        this.principal = principal;
+        this.credentials = credentials;
+        this.setAuthenticated(false);
+    }
+    // 모든 인증 완료되면 인증된 생성자로 객체 생성
+    public UsernamePasswordAuthenticationToken(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
+        super(authorities);
+        this.principal = principal;
+        this.credentials = credentials;
+        super.setAuthenticated(true);
+    }
+
+    public static UsernamePasswordAuthenticationToken unauthenticated(Object principal, Object credentials) {
+        return new UsernamePasswordAuthenticationToken(principal, credentials);
+    }
+
+    public static UsernamePasswordAuthenticationToken authenticated(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
+        return new UsernamePasswordAuthenticationToken(principal, credentials, authorities);
+    }
+
+    public Object getCredentials() {
+        return this.credentials;
+    }
+
+    public Object getPrincipal() {
+        return this.principal;
+    }
+
+    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+        Assert.isTrue(!isAuthenticated, "Cannot set this token to trusted - use constructor which takes a GrantedAuthority list instead");
+        super.setAuthenticated(false);
+    }
+
+    public void eraseCredentials() {
+        super.eraseCredentials();
+        this.credentials = null;
+    }
+  ```
+
+- AuthenticationManger 
+  여러 AuthenticatonProvider(인증공급자)를 관리하고 인증 요청을 처리하는 인터페이스
+  
+    인증객체토큰을 Provider에게 받아서 AuthenticationFilter에게 return
+    
+    ```java
+    Authentication authenticate(Authentication authentication) throws AuthenticationException;
+    ```
+    Authentication 객체를 통해 인증 수행하는 메서드 구현
+
+- AuthenticationProvider
+  인증 프로세스를 담당하는 인터페이스
+  
+    로직 실행 뒤 인증 객체 토큰을 AuthenticationManger에게 return
+    ```java
+    // Authentication 객체를 통해 사용자 이름과 비밀번호 확인후 성공 시 인증된 Authentication 객체 반환
+    Authentication authenticate(Authentication authentication) throws AuthenticationException;
+  
+    // AuthenticationProvider가 특정 인증 클래스 지원하는지 확인
+    boolean supports(Class<?> authentication);
+    ```
+- UserDetailsService
+    
+    사용자 이름으로 사용자 세부 정보를 검색하는 객체
+- UserDetails
+    
+    스프링 시큐리티가 관리하는 사용자 객체
+
+- GrantedAuthority
+
+    사용자가 가진 권한을 통해 접근 허용 여부 결정
+
+
 ## 4주차
 ### 1. 인스타그램의 4가지 HTTP Method API
 1. 새로운 데이터 생성
