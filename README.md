@@ -109,8 +109,71 @@ CEOS 20th BE study - instagram clone coding
     스프링 시큐리티가 관리하는 사용자 객체
 
 ### securityConfig 설정
+```java
+@Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder(){
 
+        return new BCryptPasswordEncoder();
+    }
+```
+
+```java
+    // 시큐리티 필터 설정
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
+        final String[] ALL_URL = new String[]{"/accounts/login", "/accounts/user/signup"};
+        // CSRF 보호 기능을 비활성화
+        http
+                .csrf((auth) -> auth.disable());
+        // 폼 로그인 비활성화
+        http    
+                .formLogin((auth) -> auth.disable());
+        // 리소스(URL)의 권한 설정
+        http
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(ALL_URL).permitAll()
+                        .anyRequest().authenticated());
+        // 세션 관리 설정
+        http
+                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        
+        return http.build();
+
+
+    }
+```
+csrf: Cross Site Request Forgery, 의도치 않은 위조 요청을 보냈을 때 csrf protection을 적용하면 html에서 csrf 토큰이 포함되어 있어야 요청을 받아들이게 함으로써 위조 요청 방지
+
+Spring security는 csrf protection을 제공하지만 disable!
+
+요즘 rest api를 이용하는 서버스는 session 기반 인증과 달리 토큰 방식을 사용! 따라서 stateless하기 때문에 따로 서버에 인증 정보를 보관하지 않음!
+```java
+    // authenticationManger를 Bean 등록
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+```
 ### 회원가입 구현
+```java
+public class AuthService implements UserDetailsService {
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private UserRepository userRepository;
+
+    @Transactional
+    public User create(JoinRequestDto joinRequestDto) {
+        String nickname = joinRequestDto.getNickname();
+        Boolean isExist = userRepository.existsByNickname(nickname);
+        if (isExist) throw new BadRequestException(ExceptionCode.ALREADY_EXIST_NICKNAME);
+
+        String encPassword = bCryptPasswordEncoder.encode(joinRequestDto.getPassword());
+        User user = joinRequestDto.toEntity(joinRequestDto, encPassword);
+
+        return userRepository.save(user);
+
+    }
+}
+```
 
 ### 로그인 구현
 
