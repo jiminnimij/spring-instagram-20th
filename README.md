@@ -328,8 +328,108 @@ public boolean validateToken(String token) {
         response.addCookie(refreshTokenCookie);
     }
 ```
+
+```java
+@Slf4j
+@RequiredArgsConstructor
+public class JwtValidationFilter extends OncePerRequestFilter {
+    private final JwtUtil jwtUtil;
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        String token = jwtUtil.resolveToken(request);
+
+        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            if (token != null && jwtUtil.validateToken(token)) {
+                Authentication authentication = jwtUtil.getAuthentication(token);
+
+                String nickname = jwtUtil.getUserNickname(token);
+
+                User user = User.builder()
+                        .nickname(nickname)
+                        .password("password")
+                        .build();
+
+                CustomUserDetails customUserDetails = new CustomUserDetails(user);
+
+                Authentication authToken =
+                        new UsernamePasswordAuthenticationToken(nickname, null, List.of());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+
+
+
+    }
+}
+```
+token 정보를 받아서 검증하고 인증된사용자 정보를 Securityontext에 설정하는 역할
+
+OncePerRequestFilter를 상속받아서 요청마다 한번만 실행
+
+securityConfig 수정
+
+```java
+    http
+        .addFilterBefore(new JwtValidationFilter(jwtUtil), JwtAuthenticationFilter.class)
+        .addFilterAt(loginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+```
+JwtValidationFilter가 JwtAuthenticationFilter 앞에서 실행
+
+Jwt 검즈을 하고 실패하면 그 정보를 기반으로 AuthenticationFilter 실행
+
+
 ### Redis
-Re
+Redis: 메모리 기반의 데이터 저장소
+
+키-밸류 데이터 구조에 기반한 다양한 형태의 자료 구조 제공
+
+=> 빠른 처리속도가 장점이지만 메모리에 저장하기에 저장 공간에 제약이 있다는 단점이 있음!
+
+Redis -> I/O가 빈번한 데이터를 저장할 때 사용하기 좋고, 사용자 세션을 유지하고 불러오고 여러 활동을 추적할 때 효과적으로 사용 가능
+
+jwt refreshToken을 해킹 당했을 때 accessToken을 재발급 할 수 있는데 이때 accessToken의 소유자가 정당한 소유자인지를 확인하기 위해 db에 저장해 사용하는데 이때 가장 적합한 db가 redis라고 합니다...!
+
+```java
+@Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        ...   
+        redisService.save(nickname, refreshToken, Duration.ofMillis(jwtUtil.getExpiration(refreshToken)));
+        ...  
+}
+
+```
+Redis에 refreshToken 유효시간만큼 캐시
+
+AuthController
+```java
+@PostMapping("/token/refresh")
+    public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse respone, @CookieValue(name="refreshToken", required = false) String refreshToken) {
+        if (refreshToken == null) {
+            return ResponseEntity.badRequest().body("Refresh token is required");
+        }
+
+        if (!jwtUtil.validateToken(refreshToken)) {
+            return ResponseEntity.badRequest().body("refreshToken expired");
+        }
+
+        try {
+            String accessToken = authService.reissue(refreshToken);
+            respone.setHeader("Authorization", "Bearer " + accessToken);
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+```
+
+
 ## 4주차
 ### 1. 인스타그램의 4가지 HTTP Method API
 1. 새로운 데이터 생성
