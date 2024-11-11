@@ -174,11 +174,162 @@ public class AuthService implements UserDetailsService {
     }
 }
 ```
+=> 회원가입 후 유저 정보가 전부 response로 들어감
 
 ### 로그인 구현
+JwtAuthenticationFilter -> 인증 수행에 대한 filter
+```java
+@Slf4j
+public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+    // nickname과 password를 통해 로그인 시도
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        String contentType = request.getContentType();
+        String nickname = "";
+        String password = "";
+        // JSON 형식에서 사용하는 방식으로 로그인
+        if(contentType.equals(MediaType.APPLICATION_JSON_VALUE)){
+            try {
+                LoginRequestDto loginRequest = new ObjectMapper().readValue(request.getReader(), LoginRequestDto.class);
+                nickname = loginRequest.getNickname();
+                password = loginRequest.getPassword();
+            } catch (IOException e) {
+                throw new AuthenticationServiceException("잘못된 key, name으로 요청했습니다.", e);
+            }
+        }
+        //HTML 폼에서 사용하는 방식으로 로그인
+        else if(contentType.equals(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
+            nickname = this.obtainPassword(request);
+        }
+        
+        // 인증되기 전, 인증 객체 생성
+        UsernamePasswordAuthenticationToken unauthenticated = new UsernamePasswordAuthenticationToken(nickname, password);
+        //인증 매니저를 통해  인증 처리 -> 유효할 경우 Authentication 객체를 반환
+        return super.getAuthenticationManager().authenticate(unauthenticated);
+    }
+    
+    // 인증 성공 시 실행하는 메서드
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,Authentication authResult) throws IOException, ServletException {
+        log.info("Security Login >> 인증 성공");
+        final String nickname = authResult.getName();
 
+        AuthenticationSuccessHandler handler = this.getSuccessHandler();
+        handler.onAuthenticationSuccess(request, response, authResult);
+    }
+
+    // 인증 실피 시 실행하는 메서드
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        log.info("Security Login >> 인증 실패");
+
+        AuthenticationFailureHandler handler = this.getFailureHandler();
+        handler.onAuthenticationFailure(request, response, failed);
+    }
+}
+
+```
+
+securityConfig
+```java
+//로그인 인증 필터
+@Bean
+    public LoginAuthenticationFilter loginAuthenticationFilter() throws Exception {
+        LoginAuthenticationFilter loginAuthenticationFilter = new LoginAuthenticationFilter();
+        loginAuthenticationFilter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
+        // 로그인 경로 설정, Spring Security는 /login 경로로 요청 처리 -> /accounts/login으로 변경
+        loginAuthenticationFilter.setFilterProcessesUrl("/accounts/login");
+        // 로그인 성공 했을 때 실행
+        loginAuthenticationFilter.setAuthenticationSuccessHandler(loginSuccessHandler); 
+        // 로그인 실패 했을 때 실행
+        loginAuthenticationFilter.setAuthenticationFailureHandler(loginFailHandler);    
+        return loginAuthenticationFilter;
+    }
+
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    // CORS 설정
+    http.cors((cors -> cors.configurationSource(new CorsConfigurationSource() {
+        @Override
+        public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+            CorsConfiguration configuration = new CorsConfiguration();
+            // 지정된 도메인과 HTTP 메서드만 허용
+            configuration.setAllowedOrigins(List.of(ALLOW_CROSS_ORIGIN_DOMAIN));
+            configuration.setAllowedMethods(List.of(ALLOW_METHODS));
+            // 모든 HTTP 헤더 허용
+            configuration.setAllowedHeaders(Collections.singletonList("*"));
+            // 쿠키나 인증 정보를 포함한 요청 허용
+            configuration.setAllowCredentials(true);
+            // CORS preflight 요청 응답 시간 1시간 동안 캐시
+            configuration.setMaxAge(3600L);
+
+        return configuration;
+        }
+    })));
+    // 기존 UsernamePasswordAuthenticationFilter를 대체
+    http
+          .addFilterAt(loginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+}
+```
+token을 발급하고 token에서 정보를 추출할 수 있는 JwtUtil
+```java
+// token 생성
+public String generateAccessToken(String nickname, String roles) {
+        Claims claims = (Claims) Jwts.claims().setSubject(nickname);
+        claims.put("roles", roles);
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(claims)
+                .claim("type", "access")
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_VALIDITY))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
+// Request의 Header에서 token 값
+public String resolveToken(HttpServletRequest request) {
+  return request.getHeader("X-AUTH-TOKEN");
+}
+
+// 토큰의 유효성 + 만료일자 확인
+public boolean validateToken(String token) {
+  try {
+    Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).build().parseClaimsJws(token);
+    return !claims.getBody().getExpiration().before(new Date());
+  } catch (Exception e) {
+    return false;
+  }
+}
+```
+인증 성공 / 실패 시 실행하는 handler 구현
+```java
+@Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String nickname = userDetails.getUsername();
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        String role = authorities.stream().findFirst().get().getAuthority();
+
+        // accessToken은 헤더로 refreshToken은 쿠키에 넣어 전달
+        String accessToken = jwtUtil.generateAccessToken(nickname, role);
+        String refreshToken = jwtUtil.generateRefreshToken(nickname, role);
+        
+        Cookie refreshTokenCookie = createCookie(refreshToken, "refreshToken");
+        response.addHeader("Authorization", "Bearer " + accessToken);
+
+        String jsonResponse = new ObjectMapper().writeValueAsString(new LoginResponseDto(HttpServletResponse.SC_OK, "로그인 성공"));
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(jsonResponse);
+        
+        response.addCookie(refreshTokenCookie);
+    }
+```
 ### Redis
-
+Re
 ## 4주차
 ### 1. 인스타그램의 4가지 HTTP Method API
 1. 새로운 데이터 생성

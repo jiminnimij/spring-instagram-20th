@@ -63,7 +63,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private Cookie createCookie(String accessToken, String cookieName) {
         Cookie accessTokenCookie = new Cookie(accessToken, cookieName);
-        long expiration = jwtUtil.getExpiration(accessToken);
+        long expiration = jwtUtil.v(accessToken);
         int maxAge = (int)((expiration - new Date(System.currentTimeMillis()).getTime()) / 1000);
         accessTokenCookie.setMaxAge(maxAge);
         accessTokenCookie.setPath("/");
