@@ -407,6 +407,7 @@ jwt refreshToken을 해킹 당했을 때 accessToken을 재발급 할 수 있는
 Redis에 refreshToken 유효시간만큼 캐시
 
 AuthController
+유효성 검사 후 accessToken을 재발급한 토큰을 다시 header로 전송
 ```java
 @PostMapping("/token/refresh")
     public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse respone, @CookieValue(name="refreshToken", required = false) String refreshToken) {
