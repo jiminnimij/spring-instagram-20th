@@ -86,7 +86,7 @@ public class SecurityConfig {
                 .formLogin((auth) -> auth.disable());
         http
                 .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/accounts/**").permitAll()
+                .requestMatchers(ALL_URL).permitAll()
                 .anyRequest().authenticated());
         http
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

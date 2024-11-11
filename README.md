@@ -4,7 +4,9 @@ CEOS 20th BE study - instagram clone coding
 ## 5주차
 ### Spring Security 주요 객체
 - SecurityContextHolder, SecurityContext, Authentication
+
   ![img.png](img.png)
+
   Authentication 객체에는 principal(아이디; username), credential(비밀번호; password) 정보
   
     ```java
@@ -106,10 +108,13 @@ CEOS 20th BE study - instagram clone coding
     
     스프링 시큐리티가 관리하는 사용자 객체
 
-- GrantedAuthority
+### securityConfig 설정
 
-    사용자가 가진 권한을 통해 접근 허용 여부 결정
+### 회원가입 구현
 
+### 로그인 구현
+
+### Redis
 
 ## 4주차
 ### 1. 인스타그램의 4가지 HTTP Method API
