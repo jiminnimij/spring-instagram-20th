@@ -201,25 +201,140 @@ WARNING: daemon is not using the default seccomp profile
   서렁아하며 슈퍼 유ㅓ로 ㅣ행됨
 - WORKDIR
 
-  image 마드ㅡ 과ㅓㅇ에서 기보으로 ㅏㄱ업할 디레고리 서렁렁
+  image 만드는 과정(layer)에서 기본으로 작업할 디렉토리를 설정
 - COPY
-- ADD
-- EXPOSE
-- CMD
-- ENTRYPOINT
-- ONBUILD
-- STOPSIGNAL
-- HEALTHCHECK
-- HELL
 
-머리 스테이지
+  image를 만든느 과정(layer)에서 추가할 파일과 추가될 경로를 입력 (복사)
+
+  추가할 파일은 Dockerfile이 있는 경로를 기반으로!
+  추가할 파일의 경우 context folder의 상위 디렉토리에 접근할 수 없기 때문에 접근이 필요할 경우 context folder 변경 필요
+- ADD
+
+  image를 만드는 과정에서 추가할 파일과 추가될 경로 입력
+
+  COPY와 유사하지만 추가 기능 제공
+
+  URL을 통해 파일을 다운로드 가능, 압축된 파일을 자동으로 추출
+
+  명료성과 예측 가능성을 위해서 COPY를 사용하는 것을 권장!
+- EXPOSE
+
+  imageㄹ르 통해 생성되는 container에서 노출할 port 명시
+
+  실제로 bind하기 위해서는 container 생성 시 옵션을 추가해야 함!
+- CMD
+
+  image를 통해 생성되는 container에서 실행할 command를 입력
+
+  Dockerfile 내부에서 한번만! 사용 가능 (생략 가능)
+
+  ENTRYPOINT 설정 시 CMD 내용이 ENTRYPOINT의 파라미터로 변경
+- ENTRYPOINT
+
+  image를 통해 생성되는 container에서 실행할 command를 입력
+
+  Dockerfile 내부에서 한 번만! 사용 가능(생략 가능)
+
+  CMD가 설정될 경우 ENTRYPOINT의 파라미터로 사용
+- ONBUILD
+
+  Dockerfile을 통해 생성된 image가 다른 Dockerfile에서 FROM을 통해 베이스 image로 사용되어 build될 때 실행할 명령어 입력
+
+  ```
+  FROM mirror.gcr.io/library/alpine:3.16
+  LABEL imagename="hackerpark"
+  LABEL version="1.0"
+  RUN echo "First Image Build"
+  ONBUILD RUN echo "First Base Image" >> /first.txt
+  ENTRYPOINT ["/bin/sh", "-c", "ls /"]
+  ```
+- STOPSIGNAL
+
+  image를 통해 생성되는 container 종료시 사용될 SIGNAL 설정
+
+  설정하지 않는 경우 기 SIGTERM
+
+  SIGTERM은 컨테이너가 프로세스를 정상적으로 종료할 수 있을 때까지 기다리고, 지정된 시간 (default-10sec)동안 종료되지 않으면 SIGKILL 전송 
+- HEALTHCHECK
+
+  image를 통해 생성되는 container에서 실행되는 프로세스의 상태를 확인하기 위해 설정
+
+  image에 curl이 포함되어야 함
+
+  - --interval 옵션을 통해 healthcheck의 interval을 설정
+  - --timeout 옵션을 통해 healthcheck CMD의 timeout을 설정
+  - --retries 옵션을 통해 healthcheck CMD의 tiemout 제한 개수 설정정
+- SHELL
+
+  Dockerfile에서 사용할 기본 shell을 설정
+
+멀티 스테이지
 : Dockerfile을 통해 image를 생성하는 과정에서 필요한 라이브러리와 패키지들을 모두 포함하기 때문에 최종 결과물로 생성된 image의 크기가 매우 커지는(GB) 경우도 발생하는데
 
 이때 image 만드는 과정과 image를 통해 container로 실행하기 위해 필요한 역역을 구분 지어 최종 결과물인 image의 경량화를 할 수 있는데
 
 Dockerfile을 이걸 위해서 멀티 스테이지 기능을 지원
 
+멀티 스테이지를 사용하기 위해서는 image를 만드는 과정에서 필요한 내용과 최종적으로 실행할 환경을 분리하는 작업 필요!
 
+이를 FROM을 사용하여 구분
+
+Dockerfile에 FROM을 여러번 사용해 각 stage를 분리하여 image의 크리르 줄일 수 있음
+
+멀티 스테이지에서 FROM과 ARG 위치에 따라 ARG 사용 방법이 다른데
+
+FROM 보다 ARG가 위에 정의된 경우 ARG 아래 쪽 FROM에서 모두 ARG 사용이 가능하지만
+
+아닌 경우 ARG를 포함하는 FROM에서만 사용이 가능하고 다른 FROM에서는 ARG를 다시 정의해 사용해야 함
+
+### Cache
+layer는 이전 과정에서의 변경되는 것을 기록하기 때문에 Dockerfile을 사용하여 image를 여러 번 build 하게 될 경우 layer의 변경점이 없다면 Cache 되어 이미 존재하는 layer를 재사용
+
+이 점을 활용하여 변하지 않는 layer(명령어)를 Dockerfile의 상단에 배치하여 cache 된 layer를 재사용하는 것이 유리
+
+### Docker-compose
+여러 개의 컨테이너를 하나로 묶어주는 역할
+
+yaml 포맷을 활용
+
+[도커 컴포즈 문법]
+- version
+
+  도커 컴포즈 파일의 버전
+- service
+
+  컨테이너를 실행하기 위한 단위
+
+  하위에 서비스 이름 -> 서비스 옵션 순으로 작성
+- build
+
+  build할 dockerfile의 경로 지정
+- ports
+
+  포트포워딩 지정 옵션
+
+  <호스트 포트>:<컨테이너 포트>
+- volume
+
+  바인드 마운트, 볼륨 지정
+- environment
+
+  컨테이너에서 사용할 환경변수 설정
+- depends_on
+  
+  실행 순서를 보장받고 싶을 때, 사용
+
+### 오류
+자꾸 mysql과 연결이 안되는 문제가 발생했다.
+
+(communications link failure)
+
+#### 원인이 될 수 있는 요소
+1. password 입력 실수
+2. user의 권한
+3. Docker 컨테이너 내부에서 localhost로 접근할 때 호스트 머신의 localhost가 아닌 컨테이너 내부의 localhost로 해석됨
+4. mysql 서버 미실행 상태
+5. 
 
 ## 5주차
 ### Spring Security 주요 객체
