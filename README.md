@@ -330,11 +330,41 @@ yaml 포맷을 활용
 (communications link failure)
 
 #### 원인이 될 수 있는 요소
-1. password 입력 실수
+1. application.yml 파일의 정보 오류
+   패스워드, Hibernate 설정 등 확인 -> 문제 없었음!
+
+   
 2. user의 권한
-3. Docker 컨테이너 내부에서 localhost로 접근할 때 호스트 머신의 localhost가 아닌 컨테이너 내부의 localhost로 해석됨
+   application에 설정한 user가 db에 접근할 권한이 있도록 설정
+   ```mysql
+   CREATE USER 'simple'@'localhost' IDENTIFIED BY 'simple';
+   CREATE USER 'simple'@'%' IDENTIFIED BY 'simple';
+ 
+   GRANT ALL PRIVILEGES ON *.* TO 'simple'@'localhost';
+   GRANT ALL PRIVILEGES ON *.* TO 'simple'@'%';
+   ```
+
 4. mysql 서버 미실행 상태
-5. 
+
+   윈도우라면 서비스로 확인 가능
+   ![image](https://github.com/user-attachments/assets/c9977625-ac4d-44f2-b139-1b4afa8fcbdc)
+
+5. MySQL 8 버전에서 인증 방식의 변경으로 인한 오류
+   MySQL 5.7 버전으로 재설치 혹은
+
+   caching_sha2_password 방식엔서 mysql_native_password로 변경
+
+6. Docker 컨테이너 내부에서 localhost로 접근할 때 호스트 머신의 localhost가 아닌 컨테이너 내부의 localhost로 해석됨
+
+   5-1. Docker Compose를 활용한 통합 설정
+        docker-compse.yml 파일을 통해 서비스 간 네트워크를 공유하도록 설정
+
+   5-2. Spring 서버 설정 수정
+        application.yaml의 datasource: url을 localhost가 아닌 mysql로 설정
+
+   5-3. 도커 compose를 통해 spring 서버와 mysql을 함께 띄움
+        함께 실행하는 것을 통해 컨테이너 간의 네트워크 설정
+
 
 ## 5주차
 ### Spring Security 주요 객체
