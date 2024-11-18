@@ -1,18 +1,18 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url:  jdbc:mysql://localhost:3306/instagram?useSSL=false&allowPublicKeyRetrieval=true
+    url:  jdbc:mysql://mysql:3306/instagram?useSSL=false&oracle.jdbc.timezoneAsRegion=false
     username: root
     password: root1234
   jpa:
     database: mysql
-    database-platform: org.hibernate.dialect.MySQL5Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL5Dialect
-        database-platform: org.hibernate.dialect.MySQL5Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
+        database-platform: org.hibernate.dialect.MySQLDialect
         show_sql: true
         format_sql: true
 
@@ -29,3 +29,9 @@ spring:
       host: localhost
       port: 6379
       password: "1111"
+
+logging:
+  level:
+    org.hibernate.SQL: debug           # Hibernate SQL 쿼리 로깅 (디버그 레벨)
+    org.hibernate.orm.jdbc.bind: trace  # Hibernate 바인딩된 변수 로깅 (트레이스 레벨)
+    com.ceos19.everytime: debug  # 프로젝트 도메인 패키지에 대한 디버그 레벨
