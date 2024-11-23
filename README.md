@@ -180,6 +180,65 @@ EBS는 EC2에 설치된 OS에서 그냥 일반적인 하드디스크나 SSD처�
 - 스냅샷
 - IOPS(Input/Output Operation Per Second)
 
+### 트러블슈팅
+instagram을 pull 받어서 run 하는데 자꾸 컨테이너에서 오류로 실패하는 일 발생...!
+
+```bash
+docker logs {컨테이너 id}
+```
+로 문제의 원인 파악
+
+Communications link failure 문제였음
+
+`docker ps`로 확인해본 결과 
+
+| CONTAINER ID | IMAGE                 | COMMAND                | CREATED          | STATUS                   | PORTS                                              | NAMES                   |
+|--------------|-----------------------|------------------------|------------------|--------------------------|---------------------------------------------------|-------------------------|
+| d994a1cc1e32 | 010709min/instagram  | "java -jar /app.jar"   | 10 minutes ago   | Exited (1) 10 minutes ago|                                                   | pensive_dubinsky        |
+| ce95451f590b | 010709min/instagram  | "java -jar /app.jar"   | 15 minutes ago   | Exited (1) 15 minutes ago|                                                   | loving_mcclintock       |
+| 8cb249b2222b | 010709min/instagram  | "java -jar /app.jar"   | 25 minutes ago   | Exited (1) 25 minutes ago|                                                   | bold_turing             |
+| 4f1450775426 | 010709min/instagram  | "java -jar /app.jar"   | 26 minutes ago   | Exited (1) 26 minutes ago|                                                   | infallible_dijkstra     |
+| 0b6738e9e1a4 | 010709min/instagram  | "java -jar /app.jar"   | 31 minutes ago   | Exited (1) 30 minutes ago|                                                   | agitated_mclean         |
+| 3a72cfbe3813 | redis                | "docker-entrypoint.s…" | 31 minutes ago   | Up 31 minutes            | 0.0.0.0:6379->6379/tcp, :::6379->6379/tcp         | redis-container         |
+| 67751fd710fd | redis                | "docker-entrypoint.s…" | 32 minutes ago   | Exited (0) 31 minutes ago|                                                   | objective_taussig       |
+| 687aa81cddca | 010709min/instagram  | "java -jar /app.jar"   | 35 minutes ago   | Exited (1) 35 minutes ago|                                                   | vigilant_sammet         |
+| d74e22c2d83d | 010709min/instagram  | "java -jar /app.jar"   | 41 minutes ago   | Exited (1) 40 minutes ago|                                                   | clever_yalow            |
+| c4e7fba913c4 | 010709min/instagram  | "java -jar /app.jar"   | 48 minutes ago   | Exited (1) 47 minutes ago|                                                   | recursing_shirley       |
+| 091d20ec1fe3 | mysql                | "docker-entrypoint.s…" | 53 minutes ago   | Up 53 minutes            | 0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp | charming_sutherland     |
+
+
+mysql은 잘 올라가있는데... instagram과 연결이 안되고 있었음...!
+
+1. 내가 설정해준 mysql 컨테이너 이름과 실제 실행되는 컨테이너 이름이 다름
+
+    => 실행되는 컨테이너 멈춰주고
+   ```bash
+   docker run --name mysql -e MYSQL_ROOT_PASSWORD=root1234 -e MYSQL_DATABASE=instagram -d mysql:5.7
+   ```
+
+    이것처럼 name을 재설정 해줌
+
+   그럼에도 불구하고... 실패
+2. 그래서 mysql에 접속가능한지 확인하기 위해 컨테이너 내부로 들어감
+  ```bash
+  mysql -h <your-rds-endpoint> -P 3306 -u <your-username> -p
+  ```
+  
+  혹시나 하는 마음에 `SHOW DATABASES;` 해보니 instagram이라는 db가 없어 새로 생성해줌
+3. 환경변수 설정
+  `vi .env`를 통해서
+  ```bash
+  SPRING_DATASOURCE_URL=jdbc:mysql://<RDS_ENDPOINT>:3306/instagram?useSSL=false&serverTimezone=Asia/Seoul
+  SPRING_DATASOURCE_USERNAME=<RDS_USERNAME>
+  SPRING_DATASOURCE_PASSWORD=<RDS_PASSWORD>
+  ```
+  설정해줌
+
+  
+
+<img src="https://github.com/user-attachments/assets/3f7ac494-251b-4a75-a045-26713fbcc301" alt="description" width="500" />
+
+
 ## 6주차
 Image
 
