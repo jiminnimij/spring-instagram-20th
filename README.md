@@ -226,14 +226,17 @@ mysql은 잘 올라가있는데... instagram과 연결이 안되고 있었음...
   
   혹시나 하는 마음에 `SHOW DATABASES;` 해보니 instagram이라는 db가 없어 새로 생성해줌
 3. 환경변수 설정
-  `vi .env`를 통해서
   ```bash
-  SPRING_DATASOURCE_URL=jdbc:mysql://<RDS_ENDPOINT>:3306/instagram?useSSL=false&serverTimezone=Asia/Seoul
-  SPRING_DATASOURCE_USERNAME=<RDS_USERNAME>
-  SPRING_DATASOURCE_PASSWORD=<RDS_PASSWORD>
+  docker run -d --name instagram \
+  -e SPRING_DATASOURCE_URL="jdbc:mysql://mydbinstance.rds.amazonaws.com:3306/instagram?useSSL=false&serverTimezone=Asia/Seoul" \
+  -e SPRING_DATASOURCE_USERNAME=admin \
+  -e SPRING_DATASOURCE_PASSWORD=admin1234 \
+  -p 8080:8080 \
+  010709min/instagram
   ```
-  설정해줌
+  처음엔 명령어에 환경변수로 필요한 것들을 전부 입력해주지 않았는데 이런식으로 전부 입력해주었습니다.
 
+  => 성공...?!
   
 
 <img src="https://github.com/user-attachments/assets/3f7ac494-251b-4a75-a045-26713fbcc301" alt="description" width="500" />
